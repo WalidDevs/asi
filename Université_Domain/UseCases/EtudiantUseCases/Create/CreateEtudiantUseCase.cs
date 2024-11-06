@@ -12,13 +12,7 @@ public class CreateEtudiantUseCase(IEtudiantRepository etudiantRepository)
         var etudiant = new Etudiant{NumEtud = numEtud, Nom = nom, Prenom = prenom, Email = email};
         return await ExecuteAsync(etudiant);
     }
-    public async Task<Etudiant> ExecuteAsync(Etudiant etudiant)
-    {
-        await CheckBusinessRules(etudiant);
-        Etudiant et = await etudiantRepository.CreateAsync(etudiant);
-        etudiantRepository.SaveChangesAsync().Wait();
-        return et;
-    }
+
     private async Task CheckBusinessRules(Etudiant etudiant)
     {
         ArgumentNullException.ThrowIfNull(etudiant);
@@ -41,5 +35,13 @@ public class CreateEtudiantUseCase(IEtudiantRepository etudiantRepository)
         if (existe is {Count:>0}) throw new InvalidNomEtudiantException(etudiant.Email +" est déjà affecté à un étudiant");
         // Le métier définit que les nom doite contenir plus de 3 lettres
         if (etudiant.Nom.Length < 3) throw new InvalidNomEtudiantException(etudiant.Nom +" incorrect - Le nom d'un étudiant doit contenir plus de 3 caractères");
+    }
+
+    public async Task<Etudiant> ExecuteAsync(Etudiant etudiant)
+    {
+        await CheckBusinessRules(etudiant);
+        Etudiant et = await etudiantRepository.CreateAsync(etudiant);
+        etudiantRepository.SaveChangesAsync().Wait();
+        return et;
     }
 }
