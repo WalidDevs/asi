@@ -22,10 +22,10 @@ public class CreateParcoursUseCase(IRepositoryFactory parcoursRepository)
         ArgumentNullException.ThrowIfNull(parcours.Id);
         
         // On recherche un étudiant avec le même numéro étudiant
-        List<Parcours> existe = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e=>e.NomParcours.Equals(parcours.NomParcours))?? new List<Parcours>();
-        List<Parcours> parcour = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e=>e.AnneeFormation.Equals(parcours.AnneeFormation)) ?? new List<Parcours>();
+        List<Parcours> existe = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e=>e.NomParcours.Equals(parcours.NomParcours));
+        List<Parcours> parcour = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e=>e.AnneeFormation.Equals(parcours.AnneeFormation)) ;
         // Si un étudiant avec le même numéro étudiant existe déjà, on lève une exception personnalisée
-        if (existe .Any()||parcour.Any()) throw new DuplicateNomParcoursException(parcours.NomParcours+ " - ce  parcours deja existant");
+        if (existe is {Count:>=0} ||parcour is {Count:>=0}) throw new DuplicateNomParcoursException(parcours.NomParcours+ " - ce  parcours deja existant");
         
         
         if (parcours.NomParcours.Length < 3) throw new InvalidNomEtudiantException(parcours.NomParcours +" incorrect - Le nom d'un parcours doit contenir plus de 3 caractères");
