@@ -178,7 +178,7 @@ using Université_Domain.UseCases.ParcoursUseCases.Create;
 using Université_Domain.UseCases.ParcoursUseCases.EtudiantDansParcours;
 using Université_Domain.UseCases.ParcoursUseCases.UeDansParcours;
 
-namespace Université_DomainUnitTests;
+namespace UniversiteDomainUnitTests;
 
 public class ParcoursUnitTest
 {

@@ -1,4 +1,4 @@
-namespace Université_DomainUnitTests;
+namespace UniversiteDomainUnitTests;
 
 using Moq;
 using NUnit.Framework;
