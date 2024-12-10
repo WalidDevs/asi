@@ -191,30 +191,32 @@ public class ParcoursUnitTest
     public async Task CreateParcoursUseCase()
     {
         long idParcours = 1;
-        String nomParcours = "Ue 1";
+        String nomParcours = "Master1";
         int anneFormation = 2;
         
         // On crée le parcours qui doit être ajouté en base
         Parcours parcoursAvant = new Parcours{NomParcours = nomParcours, AnneeFormation = anneFormation};
         
         // On initialise une fausse datasource qui va simuler un EtudiantRepository
-        var mockParcours = new Mock<IParcoursRepository>();
+        var mockParcours = new Mock<IRepositoryFactory>();
         
         // Il faut ensuite aller dans le use case pour simuler les appels des fonctions vers la datasource
         // Nous devons simuler FindByCondition et Create
         // On dit à ce mock que le parcours n'existe pas déjà
         mockParcours
-            .Setup(repo=>repo.FindByConditionAsync(p=>p.Id.Equals(idParcours)))
+            .Setup(repo=>repo.ParcoursRepository().FindByConditionAsync(p=>p.Id.Equals(idParcours)))
             .ReturnsAsync((List<Parcours>)null);
         // On lui dit que l'ajout d'un étudiant renvoie un étudiant avec l'Id 1
         Parcours parcoursFinal =new Parcours{Id=idParcours,NomParcours= nomParcours, AnneeFormation = anneFormation};
-        mockParcours.Setup(repo=>repo.CreateAsync(parcoursAvant)).ReturnsAsync(parcoursFinal);
+        mockParcours.Setup(repo=>repo.ParcoursRepository().CreateAsync(parcoursAvant)).ReturnsAsync(parcoursFinal);
         
         var mockFactory = new Mock<IRepositoryFactory>();
-        mockFactory.Setup(facto=>facto.ParcoursRepository()).Returns(mockParcours.Object);
+        //Assert.NotNull(mockFactory.Object.ParcoursRepository());
+
+        mockFactory.Setup(facto=>facto.ParcoursRepository()).Returns(mockParcours.Object.ParcoursRepository()); // check where is the problem on the test and parcours use case , so i can find where is the problem on data generatioàn
         
         // Création du use case en utilisant le mock comme datasource
-        CreateParcoursUseCase useCase=new CreateParcoursUseCase(mockFactory.Object);
+        CreateParcoursUseCase useCase=new CreateParcoursUseCase(mockFactory.Object);  
         
         // Appel du use case
         var parcoursTeste=await useCase.ExecuteAsync(parcoursAvant);
