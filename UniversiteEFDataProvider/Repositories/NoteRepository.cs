@@ -27,7 +27,7 @@ public class NoteRepository(UniversiteDbContext context) : Repository<Note>(cont
     }
     // to implement and check later on 
     // Modifier la valeur d'une note existante
-    /*
+    
     public async Task ModifierValeurNoteAsync(long etudiantId, long ueId, float nouvelleValeur)
     {
         var note = await FindAsync(etudiantId, ueId);
@@ -46,5 +46,5 @@ public class NoteRepository(UniversiteDbContext context) : Repository<Note>(cont
         {
             await DeleteAsync(note);
         }
-    }*/
+    }
 }

@@ -45,4 +45,9 @@ public class CreateEtudiantUseCase(IRepositoryFactory etudiantRepository)
         etudiantRepository.SaveChangesAsync().Wait();
         return et;
     }
+    // adding for security
+    public bool IsAuthorized(string role)
+    {
+        return role.Equals(Roles.Responsable) || role.Equals(Roles.Scolarite);
+    }
 }

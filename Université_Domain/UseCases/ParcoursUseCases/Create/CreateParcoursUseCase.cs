@@ -20,13 +20,12 @@ public class CreateParcoursUseCase(IRepositoryFactory parcoursRepository)
         ArgumentNullException.ThrowIfNull(parcours.NomParcours);
         ArgumentNullException.ThrowIfNull(parcours.AnneeFormation);
         ArgumentNullException.ThrowIfNull(parcours.Id);
-        
+        /*
         // On recherche un étudiant avec le même numéro étudiant
-        /*List<Parcours> existe = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e=>e.NomParcours.Equals(parcours.NomParcours));
+        List<Parcours> existe = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e=>e.NomParcours.Equals(parcours.NomParcours));
         List<Parcours> parcour = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e=>e.AnneeFormation.Equals(parcours.AnneeFormation)) ;
         // Si un étudiant avec le même numéro étudiant existe déjà, on lève une exception personnalisée
         if (existe is {Count:>=0} && parcour is {Count:>=0}) throw new DuplicateNomParcoursException(parcours.NomParcours+ " - ce  parcours deja existant");
-        
         */
         
         /*var duplicates = await parcoursRepository.ParcoursRepository().FindByConditionAsync(e => 
@@ -59,5 +58,10 @@ public class CreateParcoursUseCase(IRepositoryFactory parcoursRepository)
         Parcours et = await parcoursRepository.ParcoursRepository().CreateAsync(parcours);
         parcoursRepository.SaveChangesAsync().Wait();
         return et;
+    }
+    // adding for security
+    public bool IsAuthorized(string role)
+    {
+        return role.Equals(Roles.Responsable) || role.Equals(Roles.Scolarite);
     }
 }

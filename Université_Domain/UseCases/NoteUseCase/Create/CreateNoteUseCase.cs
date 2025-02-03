@@ -69,5 +69,11 @@ public class CreateNoteUseCase(IRepositoryFactory _repositoryFactory)
             throw new InvalidOperationException($"L'UE (ID: {ueId}) n'est pas enseignée dans le parcours de l'étudiant (ID: {etudiantId}).");
         }
     }
+    
+    // adding for security
+    public bool IsAuthorized(string role)
+    {
+        return role.Equals(Roles.Responsable) || role.Equals(Roles.Scolarite);
+    }
 
 }

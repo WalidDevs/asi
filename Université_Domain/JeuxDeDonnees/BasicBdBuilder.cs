@@ -1,16 +1,14 @@
 using Université_Domain.DataAdapters.DataAdaptersFactory;
 using Université_Domain.Entities;
-//using Université_Domain.Entities.SecurityEntities;
 using Université_Domain.UseCases.EtudiantUseCases.Create;
-using Université_Domain.UseCases.NoteUseCase;
 using Université_Domain.UseCases.NoteUseCase.Create;
 using Université_Domain.UseCases.ParcoursUseCases.Create;
 using Université_Domain.UseCases.ParcoursUseCases.EtudiantDansParcours;
 using Université_Domain.UseCases.ParcoursUseCases.UeDansParcours;
+using Université_Domain.UseCases.SecurityUseCases.Create;
 using Université_Domain.UseCases.UeUseCase.Create;
 using UniversiteDomain.JeuxDeDonnees;
 
-//using Université_Domain.UseCases.SecurityUseCases;
 
 namespace Université_Domain.JeuxDeDonnees;
 
@@ -163,19 +161,14 @@ public class BasicBdBuilder(IRepositoryFactory repositoryFactory) : BdBuilder(re
     
     protected override async Task BuildRolesAsync()
     {
-				/*
-				// A décommenter quand on aura rajouté les rôles
         // Création des rôles dans la table aspnetroles
         await new CreateUniversiteRoleUseCase(repositoryFactory).ExecuteAsync(Roles.Responsable);
         await new CreateUniversiteRoleUseCase(repositoryFactory).ExecuteAsync(Roles.Scolarite);
         await new CreateUniversiteRoleUseCase(repositoryFactory).ExecuteAsync(Roles.Etudiant);
-				*/
     }
 
     protected override async Task BuildUsersAsync()
     {
-				/*
-				// A décommenter quand on aura rajouté les Users
         CreateUniversiteUserUseCase uc = new CreateUniversiteUserUseCase(repositoryFactory);
         // Création des étudiants
         foreach (var etudiant in _etudiants)
@@ -188,6 +181,8 @@ public class BasicBdBuilder(IRepositoryFactory repositoryFactory) : BdBuilder(re
         {
             await uc.ExecuteAsync(user.Email, user.Email, this.Password, user.Role, null);
         }
-				*/
     }
 }
+
+
+

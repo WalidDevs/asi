@@ -19,6 +19,19 @@ public class EtudiantDto
         Email = etudiant.Email;
         return this;
     }
+    public List<EtudiantDto> ToDtos(List<Etudiant> etudiants)
+    {
+        return etudiants.Select(etudiant => new EtudiantDto
+        {
+            Id = etudiant.Id,
+            NumEtud = etudiant.NumEtud,
+            Nom = etudiant.Nom,
+            Prenom = etudiant.Prenom,
+            Email = etudiant.Email
+        }).ToList();
+    }
+
+    
     
     public Etudiant ToEntity()
     {

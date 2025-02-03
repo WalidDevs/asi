@@ -38,4 +38,10 @@ public class CreateUeUseCase(IRepositoryFactory repositoryFactory)
         if (ue.Intitule.Length <= 3) 
             throw new InvalidIntituleUeException($"L'intitulé '{ue.Intitule}' est trop court. Il doit contenir plus de 3 caractères.");
     }
+    
+    // adding for security
+    public bool IsAuthorized(string role)
+    {
+        return role.Equals(Roles.Responsable) || role.Equals(Roles.Scolarite);
+    }
 }

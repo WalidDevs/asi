@@ -5,6 +5,7 @@ namespace Université_Domain.DataAdapters
     {
         Task<T> CreateAsync(T entity);
         Task UpdateAsync(T entity);
+        Task UpdateAsync(List<T> entities);
         Task DeleteAsync(long id);
         Task DeleteAsync(T entity);
         Task<T?> FindAsync(long id);
