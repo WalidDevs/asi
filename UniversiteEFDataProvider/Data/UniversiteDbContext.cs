@@ -91,6 +91,7 @@ public class UniversiteDbContext : IdentityDbContext<UniversiteUser>
         modelBuilder.Entity<UniversiteUser>()
             .HasOne<Etudiant>(user => user.Etudiant)
             .WithOne()
+            //.OnDelete(DeleteBehavior.Cascade);
             .HasForeignKey<Etudiant>();
         modelBuilder.Entity<Etudiant>()
             .HasOne<UniversiteUser>()

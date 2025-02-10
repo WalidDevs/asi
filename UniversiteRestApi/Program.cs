@@ -1,8 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Université_Domain.DataAdapters.DataAdaptersFactory;
-using Université_Domain.DataAdapters;
 using Université_Domain.JeuxDeDonnees;
 using UniversiteDomain.JeuxDeDonnees;
 using UniversiteEFDataProvider.Data;
@@ -13,60 +17,95 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-// Mis en place d'un annuaire des services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Logging setup
 builder.Services.AddLogging(options =>
 {
     options.ClearProviders();
     options.AddConsole();
 });
 
-// Configuration de la connexion à MySql
-String connectionString = builder.Configuration.GetConnectionString("MySqlConnection") ?? throw new InvalidOperationException("Connection string 'MySqlConnection' not found.");
-// Création du contexte de la base de données en utilisant la connexion MySql que l'on vient de définir
-// Ce contexte est rajouté dans les services de l'application, toujours prêt à être utilisé par injection de dépendances
-builder.Services.AddDbContext<UniversiteDbContext>(options =>options.UseMySQL(connectionString));
-// La factory est rajoutée dans les services de l'application, toujours prête à être utilisée par injection de dépendances
+// Database setup
+string connectionString = builder.Configuration.GetConnectionString("MySqlConnection") 
+                          ?? throw new InvalidOperationException("Connection string 'MySqlConnection' not found.");
+builder.Services.AddDbContext<UniversiteDbContext>(options => options.UseMySQL(connectionString));
 builder.Services.AddScoped<IRepositoryFactory, RepositoryFactory>();
-//builder.Services.AddScoped<UserManager<UniversiteUser>>();
-//builder.Services.AddScoped<RoleManager<UniversiteRole>>();
+
+// Identity setup
+builder.Services.AddIdentity<UniversiteUser, UniversiteRole>()
+    .AddEntityFrameworkStores<UniversiteDbContext>()
+    .AddDefaultTokenProviders();
+
+// JWT Authentication setup
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("VotreCléSecrèteTrèsLongueEtSûre")),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
-    //.AddCookie(IdentityConstants.ApplicationScheme)
-    .AddBearerToken(IdentityConstants.BearerScheme);
 
-builder.Services.AddIdentityCore<UniversiteUser>()
-    .AddRoles<UniversiteRole>()
-    .AddEntityFrameworkStores<UniversiteDbContext>() // Ici, on stocke les users dans la même bd que le reste
-    .AddApiEndpoints();
+builder.Services.AddScoped<UserManager<UniversiteUser>>();
+builder.Services.AddScoped<RoleManager<UniversiteRole>>();
 
-/*builder.Services.AddIdentity<UniversiteUser, UniversiteRole>()
-    .AddEntityFrameworkStores<UniversiteDbContext>()
-    .AddDefaultTokenProviders();*/
-
-builder.Services.AddSingleton(typeof(IEmailSender<>), typeof(NullEmailSender<>));
-
-// Création de tous les services qui sont stockés dans app
-// app contient tous les aobjets de notre application
 var app = builder.Build();
 
-// Configuration du serveur Web
-app.UseHttpsRedirection();
-app.MapControllers();
-
-// Configuration de Swagger.
-// Commentez les deux lignes ci-dessous pour désactiver Swagger (en production par exemple)
 app.UseSwagger();
 app.UseSwaggerUI();
-
+app.UseAuthentication();
 app.UseAuthorization();
-// Ajoute les points d'entrée dans l'API pour s'authentifier, se connecter et se déconnecter
-app.MapIdentityApi<UniversiteUser>();
+app.MapControllers();
 
-// Initisation de la base de données
-// A commenter si vous ne voulez pas vider la base à chaque Run!
+// Custom login endpoint with role added to JWT
+app.MapPost("/custom-login", async ([FromBody] LoginDto loginDto, UserManager<UniversiteUser> userManager, RoleManager<UniversiteRole> roleManager) =>
+{
+    var user = await userManager.FindByEmailAsync(loginDto.Email);
+    if (user != null && await userManager.CheckPasswordAsync(user, loginDto.Password))
+    {
+        var userRoles = await userManager.GetRolesAsync(user);
+
+        var authClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        // Add user roles to the token
+        authClaims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("VotreCléSecrèteTrèsLongueEtSûre"));
+
+        var token = new JwtSecurityToken(
+            expires: DateTime.Now.AddHours(3),
+            claims: authClaims,
+            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+        );
+
+        return Results.Ok(new
+        {
+            token = new JwtSecurityTokenHandler().WriteToken(token),
+            expiration = token.ValidTo
+        });
+    }
+    return Results.Unauthorized();
+});
+
 using(var scope = app.Services.CreateScope())
 {
     // On récupère le logger pour afficher des messages. On l'a mis dans les services de l'application
@@ -92,8 +131,11 @@ using(var scope = app.Services.CreateScope())
     BdBuilder seedBD = new BasicBdBuilder(repositoryFactory);
     await seedBD.BuildUniversiteBdAsync();
 }
-// Exécution de l'application
+
 app.Run();
 
-
-
+public class LoginDto
+{
+    public string Email { get; set; }
+    public string Password { get; set; }
+}
