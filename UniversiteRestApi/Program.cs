@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Université_Domain.DataAdapters.DataAdaptersFactory;
 using Université_Domain.JeuxDeDonnees;
 using UniversiteDomain.JeuxDeDonnees;
+using UniversiteDomain.UseCases;
 using UniversiteEFDataProvider.Data;
 using UniversiteEFDataProvider.Entities;
 using UniversiteEFDataProvider.RepositoryFactories;
@@ -32,6 +33,8 @@ string connectionString = builder.Configuration.GetConnectionString("MySqlConnec
                           ?? throw new InvalidOperationException("Connection string 'MySqlConnection' not found.");
 builder.Services.AddDbContext<UniversiteDbContext>(options => options.UseMySQL(connectionString));
 builder.Services.AddScoped<IRepositoryFactory, RepositoryFactory>();
+
+
 
 // Identity setup
 builder.Services.AddIdentity<UniversiteUser, UniversiteRole>()
@@ -62,6 +65,13 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<UserManager<UniversiteUser>>();
 builder.Services.AddScoped<RoleManager<UniversiteRole>>();
+
+builder.Services.AddScoped<GenerateCsvForUeNotesUseCase>();
+builder.Services.AddScoped<UploadCsvForUeNotesUseCase>();
+builder.Services.AddScoped<ValidationUseCase>();
+
+
+
 
 var app = builder.Build();
 

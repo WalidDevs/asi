@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Université_Domain.DataAdapters;
 using Université_Domain.Entities;
 using UniversiteEFDataProvider.Data;
@@ -46,5 +47,21 @@ public class NoteRepository(UniversiteDbContext context) : Repository<Note>(cont
         {
             await DeleteAsync(note);
         }
+    }
+    
+    public async Task SaveOrUpdateAsync(Note note)
+    {
+        var existingNote = await context.Notes
+            .FirstOrDefaultAsync(n => n.EtudiantId == note.EtudiantId && n.UeId == note.UeId);
+
+        if (existingNote != null)
+        {
+            existingNote.Valeur = note.Valeur;
+        }
+        else
+        {
+            await context.Notes.AddAsync(note);
+        }
+        await context.SaveChangesAsync();
     }
 }
