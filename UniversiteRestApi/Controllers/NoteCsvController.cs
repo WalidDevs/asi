@@ -41,31 +41,31 @@ namespace UniversiteRestApi.Controllers
         {
             if (file == null || file.Length == 0)
             {
-                Console.WriteLine("❌ Erreur: Le fichier est invalide ou vide.");
+                Console.WriteLine("Erreur: Le fichier est invalide ou vide.");
                 return BadRequest(new { error = "Fichier invalide ou vide." });
             }
 
             try
             {
-                Console.WriteLine($"📂 Début du traitement du fichier CSV pour l'UE {ueId}");
-                Console.WriteLine($"📝 Nom du fichier : {file.FileName}, Taille : {file.Length} octets");
+                Console.WriteLine($" Début du traitement du fichier CSV pour l'UE {ueId}");
+                Console.WriteLine($" Nom du fichier : {file.FileName}, Taille : {file.Length} octets");
 
                 using (var stream = file.OpenReadStream())
                 {
                     await _uploadCsvUseCase.ExecuteAsync(stream, ueId);
                 }
 
-                Console.WriteLine("✅ Notes enregistrées avec succès !");
+                Console.WriteLine(" Notes enregistrées avec succès !");
                 return Ok(new { message = "Notes enregistrées avec succès." });
             }
             catch (CsvProcessingException e)
             {
-                Console.WriteLine($"❌ Erreur lors du traitement du fichier CSV: {e.Message}");
+                Console.WriteLine($" Erreur lors du traitement du fichier CSV: {e.Message}");
                 return BadRequest(new { error = e.Message });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"🔥 Erreur inconnue : {ex.Message}");
+                Console.WriteLine($" Erreur inconnue : {ex.Message}");
                 return StatusCode(500, new { error = "Une erreur interne s'est produite." });
             }
         }

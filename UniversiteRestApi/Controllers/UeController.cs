@@ -41,8 +41,9 @@ public class UeController(IRepositoryFactory repositoryFactory) : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
-            
+            return StatusCode(404, e.Message);
+
+
         }
         
         return res;

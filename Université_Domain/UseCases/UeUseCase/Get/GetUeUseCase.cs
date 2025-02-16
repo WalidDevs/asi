@@ -6,25 +6,27 @@ namespace Université_Domain.UseCases.UeUseCase.Get;
 public class GetUnUeUseCase(IRepositoryFactory repository)
 {
     
-    public async Task<Ue> ExecuteAsync(long UeId)
+    public async Task<Ue> ExecuteAsync(long ueId)
     {
-        // Ensure the input is a valid student number (non-zero)
-        if (UeId == 0)
+        // Vérifie que l'identifiant de l'UE est valide (non nul)
+        if (ueId == 0)
         {
-            throw new ArgumentException("Numéro d'étudiant is required", nameof(UeId));
+            throw new ArgumentException("L'identifiant de l'UE est requis.", nameof(ueId));
         }
 
-        // Search for the Etudiant by their NumEtud
-        var Ue = await repository.UeRepository().FindAsync(UeId);
-        Console.WriteLine(Ue);
+        // Recherche de l'UE par son ID
+        var ue = await repository.UeRepository().FindAsync(ueId).ConfigureAwait(false);
+    
+        // Vérifie si l'UE existe
+        if (ue == null)
+        {
+            throw new Exception("UE non trouvée.");
+        }
 
-        // If no Etudiant is found, throw an exception
-            
-        
-        
-
-        return Ue; // Return true to indicate successful deletion
+        Console.WriteLine(ue);
+        return ue; // Retourne l'UE trouvée
     }
+
 
 
     // Authorization check to verify if the user has the right role to perform the delete operation
